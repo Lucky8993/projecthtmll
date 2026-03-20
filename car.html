@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Car Dodge Game</title>
+<style>
+  body {
+    margin: 0;
+    background: #222;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: white;
+    text-align: center;
+  }
+
+  #gameArea {
+    position: relative;
+    width: 300px;
+    height: 500px;
+    background: #444;
+    margin: 20px auto;
+    overflow: hidden;
+    border: 3px solid white;
+  }
+
+  .car {
+    position: absolute;
+    width: 50px;
+    height: 80px;
+    bottom: 10px;
+    left: 125px;
+    background: red;
+    border-radius: 10px;
+  }
+
+  .enemy {
+    position: absolute;
+    width: 50px;
+    height: 80px;
+    top: -100px;
+    background: yellow;
+    border-radius: 10px;
+  }
+
+  #info {
+    font-size: 18px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🚗 Car Dodge Game</h1>
+<div id="info">
+  Time: <span id="time">0</span> sec |
+  Score: <span id="score">0</span>
+</div>
+
+<div id="gameArea">
+  <div id="player" class="car"></div>
+</div>
+
+<script>
+let player = document.getElementById("player");
+let gameArea = document.getElementById("gameArea");
+let timeDisplay = document.getElementById("time");
+let scoreDisplay = document.getElementById("score");
+
+let playerX = 125;
+let speed = 3;
+let gameRunning = true;
+let time = 0;
+let score = 0;
+
+document.addEventListener("keydown", moveCar);
+
+function moveCar(e) {
+  if (!gameRunning) return;
+
+  if (e.key === "ArrowLeft" && playerX > 0) {
+    playerX -= 20;
+  }
+  if (e.key === "ArrowRight" && playerX < 250) {
+    playerX += 20;
+  }
+
+  player.style.left = playerX + "px";
+}
+
+function createEnemy() {
+  if (!gameRunning) return;
+
+  let enemy = document.createElement("div");
+  enemy.classList.add("enemy");
+  enemy.style.left = Math.floor(Math.random() * 250) + "px";
+  gameArea.appendChild(enemy);
+
+  moveEnemy(enemy);
+}
+
+function moveEnemy(enemy) {
+  let enemyY = -100;
+
+  function fall() {
+    if (!gameRunning) return;
+
+    enemyY += speed;
+    enemy.style.top = enemyY + "px";
+
+    // Collision detection
+    let playerRect = player.getBoundingClientRect();
+    let enemyRect = enemy.getBoundingClientRect();
+
+    if (
+      playerRect.left < enemyRect.right &&
+      playerRect.right > enemyRect.left &&
+      playerRect.top < enemyRect.bottom &&
+      playerRect.bottom > enemyRect.top
+    ) {
+      gameOver();
+    }
+
+    if (enemyY < 500) {
+      requestAnimationFrame(fall);
+    } else {
+      enemy.remove();
+      score++;
+      scoreDisplay.textContent = score;
+    }
+  }
+
+  fall();
+}
+
+function gameLoop() {
+  if (!gameRunning) return;
+
+  createEnemy();
+  setTimeout(gameLoop, 1500);
+}
+
+function startTimer() {
+  let timer = setInterval(() => {
+    if (!gameRunning) {
+      clearInterval(timer);
+      return;
+    }
+    time++;
+    timeDisplay.textContent = time;
+  }, 1000);
+}
+
+function gameOver() {
+  gameRunning = false;
+  alert("Game Over! Time: " + time + " sec | Score: " + score);
+}
+
+gameLoop();
+startTimer();
+</script>
+
+</body>
+</html>
